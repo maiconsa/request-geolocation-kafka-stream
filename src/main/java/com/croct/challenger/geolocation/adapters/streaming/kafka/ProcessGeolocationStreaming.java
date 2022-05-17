@@ -26,6 +26,7 @@ import com.croct.challenger.geolocation.domain.geolocation.ports.FindGeolocation
 import com.croct.challenger.geolocation.domain.geolocation.ports.StoreConsumedTimestampEventService;
 import com.croct.challenger.geolocation.domain.utils.ValidationUtils;
 
+
 public class ProcessGeolocationStreaming {
 
 	private static final String NEW_EVENT_MESSAGE = "New Message  on topic  {}  arrived : {}";

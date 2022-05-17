@@ -11,7 +11,7 @@ public class JsonKafkaDeserializer<T> implements Deserializer<T> {
 
 	public JsonKafkaDeserializer(Class<T> clazz) {
 		this.mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		 this.mapper.findAndRegisterModules();
+		this.mapper.findAndRegisterModules();
 		this.clazz = clazz;
 	}
 
@@ -23,7 +23,5 @@ public class JsonKafkaDeserializer<T> implements Deserializer<T> {
 		} catch (Exception e) {
 			throw new IllegalArgumentException("JsonDeserializer erro ", e);
 		}
-
 	}
-
 }
