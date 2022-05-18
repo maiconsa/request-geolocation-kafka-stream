@@ -8,12 +8,15 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Properties;
+
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
 import org.apache.kafka.streams.test.TestRecord;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -22,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.croct.challenger.geolocation.TestsConstants;
 import com.croct.challenger.geolocation.adapters.streaming.kafka.events.FindedGeolocationEvent;
 import com.croct.challenger.geolocation.adapters.streaming.kafka.serders.JsonKafkaDeserializer;
-import com.croct.challenger.geolocation.config.KafkaStreamProperties;
+import com.croct.challenger.geolocation.config.ApplicationProperties;
 import com.croct.challenger.geolocation.domain.geolocation.entity.IpAddress;
 import com.croct.challenger.geolocation.domain.geolocation.ports.CheckCanConsumeEventService;
 import com.croct.challenger.geolocation.domain.geolocation.ports.FindGeolocationByIpAddressService;
@@ -43,15 +46,23 @@ public class ProcessGeolocationStreamingTest {
 	private StoreConsumedTimestampEventService storeTimestamp;
 
 	
-	private KafkaStreamProperties properties = new KafkaStreamProperties("app", "localhost:8080", "source", "target"); 
+	
+	private ApplicationProperties properties; 
 	
 	
-	@Test
-	public void shouldBeAbleToStart() {
-		streaming = new ProcessGeolocationStreaming(findGeolocation, checkCanConsume, storeTimestamp, properties);
-		streaming.start();
+	@BeforeEach
+	public void config() {
+		
+		Properties config = new Properties();		
+		config.put(ApplicationProperties.APP_ID, "app");
+		config.put(ApplicationProperties.BOOTSTRAP_SERVER, "dummyserver");
+		config.put(ApplicationProperties.SOURCE_TOPIC,"dummy_source_topic");
+		config.put(ApplicationProperties.TARGET_TOPIC, "dummy_target_topic");
+		config.put(ApplicationProperties.TIME_WINDOW_IN_MINUTES, "2");
+		properties = ApplicationProperties.build(config);
 	}
 	
+
 	
 	@Test
 	public void shoudBeAbleToRequestedGeolocationOutsideTimeWindow() {
@@ -64,14 +75,15 @@ public class ProcessGeolocationStreamingTest {
 		TopologyTestDriver testDriver  = new TopologyTestDriver(streaming.getTopology(), properties.getProperties());
 		
 		TestInputTopic<String, String> inbound = testDriver.createInputTopic(properties.getSourceTopic(),new StringSerializer(),new StringSerializer());
+		TestOutputTopic<String,String> outbound =  testDriver.createOutputTopic(properties.getTargetTopic(),new StringDeserializer(),new StringDeserializer());
+
 		inbound.pipeInput("",inputJson());
-		
+		testDriver.close();
 		
 		verify(findGeolocation).run(any(IpAddress.class), anyString());
 		verify(checkCanConsume).run(any(IpAddress.class), anyString());
 		verify(storeTimestamp).run(any(IpAddress.class), anyString(), anyLong());
 		
-		TestOutputTopic<String,String> outbound =  testDriver.createOutputTopic(properties.getTargetTopic(),new StringDeserializer(),new StringDeserializer());
 		assertOutput(outbound.readRecord());
 	}
 	

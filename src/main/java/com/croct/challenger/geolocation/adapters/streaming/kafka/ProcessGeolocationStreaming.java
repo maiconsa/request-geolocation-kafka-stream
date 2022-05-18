@@ -1,6 +1,8 @@
 package com.croct.challenger.geolocation.adapters.streaming.kafka;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.kafka.common.serialization.Serdes;
@@ -18,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.croct.challenger.geolocation.adapters.streaming.kafka.events.FindedGeolocationEvent;
 import com.croct.challenger.geolocation.adapters.streaming.kafka.events.RequestedGeolocationEvent;
 import com.croct.challenger.geolocation.adapters.streaming.kafka.serders.GenerateSerderFactory;
-import com.croct.challenger.geolocation.config.KafkaStreamProperties;
+import com.croct.challenger.geolocation.config.ApplicationProperties;
 import com.croct.challenger.geolocation.domain.geolocation.entity.Geolocation;
 import com.croct.challenger.geolocation.domain.geolocation.entity.IpAddress;
 import com.croct.challenger.geolocation.domain.geolocation.ports.CheckCanConsumeEventService;
@@ -45,7 +47,7 @@ public class ProcessGeolocationStreaming {
 	
 	public ProcessGeolocationStreaming(FindGeolocationByIpAddressService findGeolocation,
 			CheckCanConsumeEventService checkCanConsume, StoreConsumedTimestampEventService storeTimestamp,
-			KafkaStreamProperties properties) {
+			ApplicationProperties properties) {
 		this.sourceTopic = properties.getSourceTopic();
 		this.targetTopic = properties.getTargetTopic();
 		this.findGeolocation = findGeolocation;

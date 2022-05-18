@@ -3,7 +3,11 @@ package com.croct.challenger.geolocation.config;
 import java.util.Properties;
 
 public class IpStackGeolocationProperties   {
+	private final static String PREFIX = "ipstack";
+	
 	private static final String DEFAULT_URL = "https://api.ipstack.com/";
+	
+	public static final String ACCESS_KEY = PREFIX.join(".","access_key");
 	
 	private String url;
 	private String accessKey;
@@ -15,8 +19,8 @@ public class IpStackGeolocationProperties   {
 	}
 	
 	private IpStackGeolocationProperties(Properties properties) {
-		this.url = (String) properties.get("url");
-		this.accessKey = (String) properties.get("accessKey");
+		this.url = DEFAULT_URL;
+		this.accessKey = (String) properties.get(ACCESS_KEY);
 	
 	}
 		

@@ -1,7 +1,6 @@
 package com.croct.challenger.geolocation;
 
 import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -15,12 +14,12 @@ import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.streams.StreamsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.croct.challenger.geolocation.adapters.streaming.kafka.ProcessGeolocationStreaming;
-import com.croct.challenger.geolocation.config.KafkaStreamProperties;
+import com.croct.challenger.geolocation.config.ApplicationProperties;
+import com.croct.challenger.geolocation.config.IpStackGeolocationProperties;
 import com.croct.challenger.geolocation.domain.geolocation.ports.CheckCanConsumeEventService;
 import com.croct.challenger.geolocation.domain.geolocation.ports.FindGeolocationByIpAddressService;
 import com.croct.challenger.geolocation.domain.geolocation.ports.StoreConsumedTimestampEventService;
@@ -32,6 +31,13 @@ import com.croct.challenger.geolocation.domain.geolocation.service.StoreTimestam
 public class Starter {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
+	private final String REQUIRED_ENVS[] = new String[]{
+			"IP_STACK_ACCESS_KEY",
+			"KAFKA_BOOTSTRAP_SERVER",
+			"TIME_WINDOW_IN_MINUTES",
+			"SOURCE_TOPIC",
+			"TARGET_TOPIC"};
+	
 	public static void main(String[] args) throws Exception {
 
 		new Starter().run();
@@ -41,38 +47,39 @@ public class Starter {
 	
 	public void run() throws Exception {
 				
-		if(!System.getenv().containsKey("IP_STACK_ACCESS_KEY")) {
-			throw new  Exception("Please set the IP_STACK_ACCESS_KEY on environment");
-		}
-		if(!System.getenv().containsKey("KAFKA_BOOTSTRAP_SERVER")) {
-			throw new  Exception("Please set the KAFKA_BOOTSTRAP_SERVER on environment");
+		for (String ENV : REQUIRED_ENVS) {
+			if(!System.getenv().containsKey(ENV)) {
+				throw new  Exception("Please set the "+ENV+" on environment");
+			}
 		}
 		
-		KafkaStreamProperties kafkaProps =  new KafkaStreamProperties("geolocation-stream-app", System.getenv("KAFKA_BOOTSTRAP_SERVER"),"requested-geolocation-stream","result-geolocation-requested-stream");
-		
-		Properties ipstackProperties = new Properties();
-		ipstackProperties.put("accessKey",System.getenv("IP_STACK_ACCESS_KEY"));
+		String sourceTopic  = System.getenv("SOURCE_TOPIC");
+		String targetTopic  = System.getenv("TARGET_TOPIC");
 		
 		Properties config = new Properties();
-		config.put("ipstack", ipstackProperties);
-		config.put("kafka-stream",kafkaProps.getProperties());
+		config.put(IpStackGeolocationProperties.ACCESS_KEY,System.getenv("IP_STACK_ACCESS_KEY"));
 		
-		config.put(StreamsConfig.APPLICATION_ID_CONFIG,"geolocation-stream-app" );
-		config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,System.getenv("KAFKA_BOOTSTRAP_SERVER") );
-		createTopics(config, "requested-geolocation-stream","result-geolocation-requested-stream");
+		config.put(ApplicationProperties.APP_ID, "geolocation-stream-app");
+		config.put(ApplicationProperties.BOOTSTRAP_SERVER, System.getenv("KAFKA_BOOTSTRAP_SERVER"));
+		config.put(ApplicationProperties.SOURCE_TOPIC, System.getenv("SOURCE_TOPIC"));
+		config.put(ApplicationProperties.TARGET_TOPIC, System.getenv("TARGET_TOPIC"));
+		config.put(ApplicationProperties.TIME_WINDOW_IN_MINUTES, System.getenv("TIME_WINDOW_IN_MINUTES"));
+		
+		createTopics(config, sourceTopic,targetTopic);
 		
 
+		ApplicationProperties applicationProperties = ApplicationProperties.build(config);
+		
 		ContextFactory contextFactory = ContextEnum.IN_MEMORY.createContext(config);		
 		ConsumedEventTimestampByUserRepository timestampRepository = contextFactory.getTimestampRepository();
 		
 		FindGeolocationByIpAddressService findGeolocation = new FindGeolocationServiceImpl(contextFactory.getRequestGeolocationRepository(), contextFactory.getApiService());
-		CheckCanConsumeEventService checkCanConsume = new CheckByTimeWindowServiceImpl(timestampRepository ,Duration.ofMinutes(2));
+		CheckCanConsumeEventService checkCanConsume = new CheckByTimeWindowServiceImpl(timestampRepository ,applicationProperties.getTimeWindow());
 		StoreConsumedTimestampEventService storeTimestamp = new StoreTimestampEventServiceImpl(timestampRepository);
 		
-		ProcessGeolocationStreaming stream  = new ProcessGeolocationStreaming(findGeolocation,checkCanConsume,storeTimestamp,kafkaProps);
+		ProcessGeolocationStreaming stream  = new ProcessGeolocationStreaming(findGeolocation,checkCanConsume,storeTimestamp,applicationProperties);
 		stream.start();
-		
-		System.out.println("now epoch milli:" + OffsetDateTime.now().toInstant().toEpochMilli());
+
 	}
 	
 	 private void createTopics(final Properties allProps, String sourceTopic, String targetTOpic)

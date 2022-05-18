@@ -70,10 +70,6 @@
 			<version>2.23.0</version>
 			<scope>test</scope>
 		</dependency>
-
-
-
-
 	</dependencies>
 
 	<build>
@@ -109,7 +105,7 @@
 										<limit>
 											<counter>COMPLEXITY</counter>
 											<value>COVEREDRATIO</value>
-											<minimum>0.9</minimum>
+											<minimum>0.8</minimum>
 										</limit>
 									</limits>
 								</rule>
@@ -129,6 +125,30 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>2.22.0</version>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>com.croct.challenger.geolocation.Starter</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>

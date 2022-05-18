@@ -1,6 +1,5 @@
 package com.croct.challenger.geolocation;
 
-import java.util.MissingResourceException;
 import java.util.Properties;
 
 import com.croct.challenger.geolocation.adapters.http.geolocation.ipstack.IpStackGeolocationService;
@@ -13,22 +12,22 @@ import com.croct.challenger.geolocation.domain.geolocation.ports.repository.Requ
 import kotlin.NotImplementedError;
 
 public class RealContextFactory implements ContextFactory {
-	private  Properties properties;
-	
+
 	private HttpClientRequest httpClient;
 	
+	IpStackGeolocationProperties ipstackProp; 
 	public RealContextFactory(Properties properties) {
 		
-		if(!properties.containsKey("ipstack")) {
-			throw new MissingResourceException("Missing ipstack properties",null, "ipstack");
+		 ipstackProp = IpStackGeolocationProperties.build(properties);
+		if(ipstackProp.getAccessKey() == null) {
+			throw new RuntimeException("Please configure the ipstack properties...");
 		}
-		
-		this.properties = properties;
+
 		this.httpClient = new HttpClientRequest();
 	}
 	@Override
 	public GeolocationApiService getApiService() {
-		return new IpStackGeolocationService(IpStackGeolocationProperties.build((Properties) properties.get("ipstack")) ,httpClient);
+		return new IpStackGeolocationService(ipstackProp ,httpClient);
 	}
 
 	@Override

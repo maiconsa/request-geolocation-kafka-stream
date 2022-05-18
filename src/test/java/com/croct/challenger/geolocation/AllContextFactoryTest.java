@@ -13,6 +13,7 @@ import com.croct.challenger.geolocation.adapters.caches.InMemoryConsumedEventTim
 import com.croct.challenger.geolocation.adapters.caches.InMemoryRequestGeolocationRepository;
 import com.croct.challenger.geolocation.adapters.http.geolocation.fakeapi.FakeGeolocationApiService;
 import com.croct.challenger.geolocation.adapters.http.geolocation.ipstack.IpStackGeolocationService;
+import com.croct.challenger.geolocation.config.IpStackGeolocationProperties;
 
 import kotlin.NotImplementedError;
 
@@ -32,7 +33,7 @@ public class AllContextFactoryTest {
 	@Test
 	public void shouldNotBeAbleToUseRealContext() {
 		Properties propeties =  new Properties();
-		propeties.put("ipstack", new Properties());
+		propeties.put(IpStackGeolocationProperties.ACCESS_KEY, "ACCESS_KEY");
 		
 		ContextFactory contextFactory = ContextEnum.REAL.createContext(propeties);	
 		

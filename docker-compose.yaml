@@ -7,6 +7,9 @@ services:
     environment:
        KAFKA_BOOTSTRAP_SERVER: kafka:9092
        IP_STACK_ACCESS_KEY: 1231
+       TIME_WINDOW_IN_MINUTE: 120
+       SOURCE_TOPIC: requested-geolocation
+       TARGET_TOPIC: api-result-gelocation
     depends_on:   
       - kafka
     
