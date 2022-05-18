@@ -11,8 +11,13 @@ services:
        SOURCE_TOPIC: requested-geolocation
        TARGET_TOPIC: api-result-gelocation
        CONTEXT_EXECUTION: REAL #Valid values are REAL, IN_MEMORY
+    volumes:
+       - ./test-reports:/app/reports
     depends_on:   
-      - kafka
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy  
     
   zookeeper:
     image: confluentinc/cp-zookeeper:7.1.1

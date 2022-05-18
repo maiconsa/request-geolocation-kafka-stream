@@ -1,6 +1,14 @@
 # KafkaStreams: Solicitando Geolocation pelo IP com restrição de tempo entre as chamadas.
 
 
+## Rodando aplicação
+
+Execute o comando docker-compose:
+
+```console
+ docker-compose up --detach --force-recreate --build
+```
+
 ## Tecnologias e práticas utilizadas
 - Java 11
 - Docker
