@@ -12,6 +12,12 @@
 - Test Driven Design
 
 
+## Qualidade Software e Teste
+1 - Cobertura de Teste
+	Cobertura de 80%, conforme imagem abaixo
+![Cobertura testes](https://github.com/maiconsa/request-geolocation-kafka-stream/blob/main/imgs/cobertura-testes.png)	
+
+
 ## Exemplo payload:
 
 { "clientId": "e0001020-566e-4d8a-a834-ca73c4132aff", "ip": "134.92.114.214" }
