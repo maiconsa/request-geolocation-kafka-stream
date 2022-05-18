@@ -23,6 +23,7 @@ Execute o comando docker-compose:
 - Java 11
 - Docker
 - Docker Compose
+- Kafka Stream
 - Design Patterns: Abstract Factory , Factory , Strategy, Builder
 - JaCoCo para relatório de testes
 - JUnit,Mockito
