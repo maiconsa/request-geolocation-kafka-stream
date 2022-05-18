@@ -31,15 +31,15 @@ public class AllContextFactoryTest {
 	}
 	
 	@Test
-	public void shouldNotBeAbleToUseRealContext() {
+	public void shouldBeAbleToUseRealContext() {
 		Properties propeties =  new Properties();
 		propeties.put(IpStackGeolocationProperties.ACCESS_KEY, "ACCESS_KEY");
 		
 		ContextFactory contextFactory = ContextEnum.REAL.createContext(propeties);	
 		
 		assertInstanceOf(IpStackGeolocationService.class, contextFactory.getApiService());
-		assertThrows(NotImplementedError.class, () -> contextFactory.getTimestampRepository());
-		assertThrows(NotImplementedError.class, () -> contextFactory.getRequestGeolocationRepository());
+		assertInstanceOf(InMemoryConsumedEventTimestampRepository.class, contextFactory.getTimestampRepository());
+		assertInstanceOf(InMemoryRequestGeolocationRepository.class, contextFactory.getRequestGeolocationRepository());
 	}
 	
 }

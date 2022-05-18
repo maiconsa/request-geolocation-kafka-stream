@@ -6,10 +6,11 @@ services:
     image: app-stream:latest
     environment:
        KAFKA_BOOTSTRAP_SERVER: kafka:9092
-       IP_STACK_ACCESS_KEY: 1231
-       TIME_WINDOW_IN_MINUTE: 120
+       IP_STACK_ACCESS_KEY: [YOUR_ACCESS_KEY] #Only required if CONTEXT_EXECUTION=REAL
+       TIME_WINDOW_IN_MINUTES: 2
        SOURCE_TOPIC: requested-geolocation
        TARGET_TOPIC: api-result-gelocation
+       CONTEXT_EXECUTION: REAL #Valid values are REAL, IN_MEMORY
     depends_on:   
       - kafka
     

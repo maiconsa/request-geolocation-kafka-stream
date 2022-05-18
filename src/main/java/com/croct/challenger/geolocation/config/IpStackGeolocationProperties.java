@@ -5,7 +5,7 @@ import java.util.Properties;
 public class IpStackGeolocationProperties   {
 	private final static String PREFIX = "ipstack";
 	
-	private static final String DEFAULT_URL = "https://api.ipstack.com/";
+	private static final String DEFAULT_URL = "http://api.ipstack.com/";
 	
 	public static final String ACCESS_KEY = PREFIX.join(".","access_key");
 	

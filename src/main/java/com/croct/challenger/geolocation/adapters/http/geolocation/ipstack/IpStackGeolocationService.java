@@ -19,7 +19,7 @@ public class IpStackGeolocationService implements GeolocationApiService {
 	}
 		
 	public Geolocation getGeolocation(String ip) {
-		String url = properties.getUrl() + "/{ip}?access_key=" +properties.getAccessKey(); 
+		String url = properties.getUrl() + "/"+ip+"?access_key=" +properties.getAccessKey(); 
 		String json = client.get(url);
 		IpStackResponse response = converters.from(json);
 		return converters.from(response);

@@ -1,6 +1,5 @@
 package com.croct.challenger.geolocation;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -36,10 +35,10 @@ public class Starter {
 			"KAFKA_BOOTSTRAP_SERVER",
 			"TIME_WINDOW_IN_MINUTES",
 			"SOURCE_TOPIC",
-			"TARGET_TOPIC"};
+			"TARGET_TOPIC","CONTEXT_EXECUTION"};
 	
 	public static void main(String[] args) throws Exception {
-
+		
 		new Starter().run();
 		
 
@@ -52,6 +51,8 @@ public class Starter {
 				throw new  Exception("Please set the "+ENV+" on environment");
 			}
 		}
+		
+		ContextEnum context = ContextEnum.valueOf(System.getenv("CONTEXT_EXECUTION"));
 		
 		String sourceTopic  = System.getenv("SOURCE_TOPIC");
 		String targetTopic  = System.getenv("TARGET_TOPIC");
@@ -70,7 +71,9 @@ public class Starter {
 
 		ApplicationProperties applicationProperties = ApplicationProperties.build(config);
 		
-		ContextFactory contextFactory = ContextEnum.IN_MEMORY.createContext(config);		
+		
+		
+		ContextFactory contextFactory = context.createContext(config);		
 		ConsumedEventTimestampByUserRepository timestampRepository = contextFactory.getTimestampRepository();
 		
 		FindGeolocationByIpAddressService findGeolocation = new FindGeolocationServiceImpl(contextFactory.getRequestGeolocationRepository(), contextFactory.getApiService());
@@ -81,6 +84,7 @@ public class Starter {
 		stream.start();
 
 	}
+	
 	
 	 private void createTopics(final Properties allProps, String sourceTopic, String targetTOpic)
 	 

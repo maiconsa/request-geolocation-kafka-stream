@@ -2,14 +2,14 @@ package com.croct.challenger.geolocation;
 
 import java.util.Properties;
 
+import com.croct.challenger.geolocation.adapters.caches.InMemoryConsumedEventTimestampRepository;
+import com.croct.challenger.geolocation.adapters.caches.InMemoryRequestGeolocationRepository;
 import com.croct.challenger.geolocation.adapters.http.geolocation.ipstack.IpStackGeolocationService;
 import com.croct.challenger.geolocation.commons.HttpClientRequest;
 import com.croct.challenger.geolocation.config.IpStackGeolocationProperties;
 import com.croct.challenger.geolocation.domain.geolocation.ports.GeolocationApiService;
 import com.croct.challenger.geolocation.domain.geolocation.ports.repository.ConsumedEventTimestampByUserRepository;
 import com.croct.challenger.geolocation.domain.geolocation.ports.repository.RequestGeolocationRepository;
-
-import kotlin.NotImplementedError;
 
 public class RealContextFactory implements ContextFactory {
 
@@ -32,12 +32,12 @@ public class RealContextFactory implements ContextFactory {
 
 	@Override
 	public RequestGeolocationRepository getRequestGeolocationRepository() {
-		throw new NotImplementedError("Not implemented");
+		return  new InMemoryRequestGeolocationRepository();
 	}
 
 	@Override
 	public ConsumedEventTimestampByUserRepository getTimestampRepository() {
-		throw new NotImplementedError("Not implemented");
+	return new InMemoryConsumedEventTimestampRepository();
 	}
 
 }
