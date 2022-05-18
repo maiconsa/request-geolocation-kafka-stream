@@ -3,6 +3,16 @@
 
 ## Rodando aplicação
 
+Especifique as seguintes variáveis ambientes no arquivo docker-compose
+KAFKA_BOOTSTRAP_SERVER,IP_STACK_ACCESS_KEY,TIME_WINDOW_IN_MINUTES,SOURCE_TOPIC,TARGET_TOPIC,CONTEXT_EXECUTION.
+
+
+A várivel IP_STACK_ACCESS_KEY só é obrigatória quando o CONTEXT_EXECUTION está setada como REAL.
+
+ Quando a variável CONTEXT_EXECUTION temos as seguinte possibilidade:
+ - REAL: nesta configuração a consulta será feita na api do IpStack e cache em memória.
+ - IN_MEMORY: neste configuração a chamada a api será FAKE e cache em memória;
+
 Execute o comando docker-compose:
 
 ```console
