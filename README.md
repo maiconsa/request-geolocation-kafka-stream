@@ -1,14 +1,34 @@
-# request-geolocation-kafka-stream
+# KafkaStreams: Solicitando Geolocation pelo IP com restrição de tempo entre as chamadas.
 
 
+## Tecnologias e práticas utilizadas
+- Java 11
+- Docker
+- Docker Compose
+- Design Patterns: Abstract Factory , Factory , Strategy, Builder]
+- JaCoCo para relatório de testes
+- JUnit,Mockito
+- Arquitetura Hexagonal
+- Test Driven Design
 
 
-Example payload:
+## Exemplo payload:
 
 { "clientId": "e0001020-566e-4d8a-a834-ca73c4132aff", "ip": "134.92.114.214" }
 
 
 ## Demonstração
+
+ Os testes a seguir foram realizados com as seguintes configurações:
+ Tópico entrada: requested-geolocation
+ Tópico saída: api-result-gelocation
+ Janela de restrição: 2 minutos
+ Ip: 134.92.114.214
+ 
+ Client Id: e0001020-566e-4d8a-a834-ca73c4132aff
+
+
+### Evidências
 
 1 - Primeira Requisição
 

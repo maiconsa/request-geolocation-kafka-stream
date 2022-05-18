@@ -1,7 +1,6 @@
 package com.croct.challenger.geolocation;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Properties;
 
@@ -14,8 +13,6 @@ import com.croct.challenger.geolocation.adapters.caches.InMemoryRequestGeolocati
 import com.croct.challenger.geolocation.adapters.http.geolocation.fakeapi.FakeGeolocationApiService;
 import com.croct.challenger.geolocation.adapters.http.geolocation.ipstack.IpStackGeolocationService;
 import com.croct.challenger.geolocation.config.IpStackGeolocationProperties;
-
-import kotlin.NotImplementedError;
 
 @ExtendWith(MockitoExtension.class)
 public class AllContextFactoryTest {

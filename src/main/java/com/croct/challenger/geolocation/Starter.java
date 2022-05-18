@@ -44,35 +44,13 @@ public class Starter {
 
 	}
 	
-	public void run() throws Exception {
-				
-		for (String ENV : REQUIRED_ENVS) {
-			if(!System.getenv().containsKey(ENV)) {
-				throw new  Exception("Please set the "+ENV+" on environment");
-			}
-		}
-		
-		ContextEnum context = ContextEnum.valueOf(System.getenv("CONTEXT_EXECUTION"));
-		
-		String sourceTopic  = System.getenv("SOURCE_TOPIC");
-		String targetTopic  = System.getenv("TARGET_TOPIC");
-		
-		Properties config = new Properties();
-		config.put(IpStackGeolocationProperties.ACCESS_KEY,System.getenv("IP_STACK_ACCESS_KEY"));
-		
-		config.put(ApplicationProperties.APP_ID, "geolocation-stream-app");
-		config.put(ApplicationProperties.BOOTSTRAP_SERVER, System.getenv("KAFKA_BOOTSTRAP_SERVER"));
-		config.put(ApplicationProperties.SOURCE_TOPIC, System.getenv("SOURCE_TOPIC"));
-		config.put(ApplicationProperties.TARGET_TOPIC, System.getenv("TARGET_TOPIC"));
-		config.put(ApplicationProperties.TIME_WINDOW_IN_MINUTES, System.getenv("TIME_WINDOW_IN_MINUTES"));
-		
-		createTopics(config, sourceTopic,targetTopic);
-		
-
+	public void run() throws Exception {		
+		checkEnviroment();
+		Properties config = extractPropertiesFromEnv();
 		ApplicationProperties applicationProperties = ApplicationProperties.build(config);
-		
-		
-		
+		createTopics(config, applicationProperties.getSourceTopic(),applicationProperties.getTargetTopic());
+			
+		ContextEnum context = ContextEnum.valueOf(System.getenv("CONTEXT_EXECUTION"));
 		ContextFactory contextFactory = context.createContext(config);		
 		ConsumedEventTimestampByUserRepository timestampRepository = contextFactory.getTimestampRepository();
 		
@@ -83,6 +61,25 @@ public class Starter {
 		ProcessGeolocationStreaming stream  = new ProcessGeolocationStreaming(findGeolocation,checkCanConsume,storeTimestamp,applicationProperties);
 		stream.start();
 
+	}
+
+	private Properties extractPropertiesFromEnv() {
+		Properties config = new Properties();
+		config.put(IpStackGeolocationProperties.ACCESS_KEY,System.getenv("IP_STACK_ACCESS_KEY"));
+		config.put(ApplicationProperties.APP_ID, "geolocation-stream-app");
+		config.put(ApplicationProperties.BOOTSTRAP_SERVER, System.getenv("KAFKA_BOOTSTRAP_SERVER"));
+		config.put(ApplicationProperties.SOURCE_TOPIC, System.getenv("SOURCE_TOPIC"));
+		config.put(ApplicationProperties.TARGET_TOPIC, System.getenv("TARGET_TOPIC"));
+		config.put(ApplicationProperties.TIME_WINDOW_IN_MINUTES, System.getenv("TIME_WINDOW_IN_MINUTES"));
+		return config;
+	}
+
+	private void checkEnviroment() throws Exception {
+		for (String ENV : REQUIRED_ENVS) {
+			if(!System.getenv().containsKey(ENV)) {
+				throw new  Exception("Please set the "+ENV+" on environment");
+			}
+		}
 	}
 	
 	

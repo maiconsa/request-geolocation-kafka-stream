@@ -1,4 +1,4 @@
-version: '3'
+version: "2.4"
 services:
 
   app-stream:
@@ -6,7 +6,7 @@ services:
     image: app-stream:latest
     environment:
        KAFKA_BOOTSTRAP_SERVER: kafka:9092
-       IP_STACK_ACCESS_KEY: [YOUR_ACCESS_KEY] #Only required if CONTEXT_EXECUTION=REAL
+       IP_STACK_ACCESS_KEY: YOUR_ACCESS_KEY #Only required if CONTEXT_EXECUTION=REAL
        TIME_WINDOW_IN_MINUTES: 2
        SOURCE_TOPIC: requested-geolocation
        TARGET_TOPIC: api-result-gelocation
@@ -22,7 +22,13 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 32181
       ZOOKEEPER_TICK_TIME: 2000
-
+    healthcheck:
+      test: nc -z localhost 32181 || exit 1
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+      
   kafka:
     image: confluentinc/cp-enterprise-kafka:7.1.1
     hostname: kafka
@@ -30,7 +36,8 @@ services:
       - '9092:9092'
       - '29092:29092'
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
@@ -45,19 +52,33 @@ services:
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+    healthcheck:
+      test: kafka-topics --list --bootstrap-server kafka:9092 || exit 1
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.1.1
     hostname: schema-registry
     depends_on:
-      - zookeeper
-      - kafka
+      zookeeper:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
     ports:
       - '8081:8081'
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:32181
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
+    healthcheck:
+      test: nc -z localhost 8081 || exit 1
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
       
   kafka-ui:
     container_name: kafka-ui
@@ -65,9 +86,12 @@ services:
     ports:
       - '8888:8080'
     depends_on:
-      - zookeeper
-      - kafka
-      - schema-registry
+      zookeeper:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy       
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
