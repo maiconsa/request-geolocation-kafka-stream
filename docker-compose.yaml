@@ -29,7 +29,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     healthcheck:
       test: nc -z localhost 32181 || exit 1
-      interval: 5s
+      interval: 30s
       timeout: 10s
       retries: 10
       start_period: 30s
@@ -59,7 +59,7 @@ services:
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
     healthcheck:
       test: kafka-topics --list --bootstrap-server kafka:9092 || exit 1
-      interval: 5s
+      interval: 30s
       timeout: 10s
       retries: 10
       start_period: 30s
@@ -80,7 +80,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
     healthcheck:
       test: nc -z localhost 8081 || exit 1
-      interval: 5s
+      interval: 30s
       timeout: 10s
       retries: 10
       start_period: 30s
