@@ -3,6 +3,7 @@ package com.croct.challenger.geolocation.adapters.streaming.kafka;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.kafka.common.serialization.Serdes;
@@ -92,7 +93,7 @@ public class ProcessGeolocationStreaming {
 	
 	private Predicate<? super String, ? super RequestedGeolocationEvent> checkIsValidEvent(){
 		return (key, value) -> {
-			boolean valid = ValidationUtils.isIpv4Valid(value.getIp()) && value.getClientId() != null;
+			boolean valid = ValidationUtils.isIpv4Valid(value.getIp()) &&  ValidationUtils.isValidUUID(value.getClientId());
 			logger.info("{}", valid  ? "Valid Payload" : "Inválid Payload");
 			return valid; 
 		};

@@ -21,6 +21,8 @@ public class TestsConstants {
 	
 	public static final String CLIENT_ID = 	UUID.randomUUID().toString();
 	
+	public static final String INVALID_CLIENT_ID = "12312-12312";
+	
 	public static final long TIMESTAMP_UNIX_MILLI_NOW = OffsetDateTime.now().toInstant().toEpochMilli();
 	
 

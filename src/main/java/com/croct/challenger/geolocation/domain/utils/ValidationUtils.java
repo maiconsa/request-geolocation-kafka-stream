@@ -1,5 +1,7 @@
 package com.croct.challenger.geolocation.domain.utils;
 
+import java.util.UUID;
+
 public final class ValidationUtils {
 	
 	
@@ -10,6 +12,17 @@ public final class ValidationUtils {
    private static final String  IPV4_REGEXX = zeroTo255 + "\\." + zeroTo255 + "\\." + zeroTo255 + "\\." + zeroTo255;
 	
 	public static boolean isIpv4Valid(String  ip) {
+		if(ip == null) return false;
 		return ip.matches(IPV4_REGEXX);
+	}
+	
+	public static boolean isValidUUID(String uuid) {
+		if(uuid == null) return false;
+		try{
+			UUID.fromString(uuid);
+			return true;
+		}catch (IllegalArgumentException e) {
+			return false;
+		}
 	}
 }

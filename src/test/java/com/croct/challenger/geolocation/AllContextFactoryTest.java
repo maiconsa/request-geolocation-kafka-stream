@@ -1,6 +1,7 @@
 package com.croct.challenger.geolocation;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Properties;
 
@@ -39,4 +40,10 @@ public class AllContextFactoryTest {
 		assertInstanceOf(InMemoryRequestGeolocationRepository.class, contextFactory.getRequestGeolocationRepository());
 	}
 	
+	
+	
+	@Test
+	public void shouldFailWhenPassingInvalidContext() {
+		assertThrows(IllegalArgumentException.class, () -> ContextEnum.INVALID.createContext(new Properties()));
+	}
 }

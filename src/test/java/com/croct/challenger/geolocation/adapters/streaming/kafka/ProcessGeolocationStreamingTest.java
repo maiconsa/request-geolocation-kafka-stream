@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,7 +79,7 @@ public class ProcessGeolocationStreamingTest {
 		TestInputTopic<String, String> inbound = testDriver.createInputTopic(properties.getSourceTopic(),new StringSerializer(),new StringSerializer());
 		TestOutputTopic<String,String> outbound =  testDriver.createOutputTopic(properties.getTargetTopic(),new StringDeserializer(),new StringDeserializer());
 
-		inbound.pipeInput("",inputJson());
+		inbound.pipeInput("",validInputJson());
 		testDriver.close();
 		
 		verify(findGeolocation).run(any(IpAddress.class), anyString());
@@ -85,6 +87,42 @@ public class ProcessGeolocationStreamingTest {
 		verify(storeTimestamp).run(any(IpAddress.class), anyString(), anyLong());
 		
 		assertOutput(outbound.readRecord());
+	}
+	
+	
+	@Test
+	public void shoudNotBeAbleToRequestIfIpNull() {
+				
+		streaming = new ProcessGeolocationStreaming(findGeolocation, checkCanConsume, storeTimestamp, properties);
+		TopologyTestDriver testDriver  = new TopologyTestDriver(streaming.getTopology(), properties.getProperties());
+		
+		TestInputTopic<String, String> inbound = testDriver.createInputTopic(properties.getSourceTopic(),new StringSerializer(),new StringSerializer());
+
+		inbound.pipeInput("",invalidInputJsonIpNull());
+		testDriver.close();
+		
+		verify(findGeolocation,times(0)).run(any(IpAddress.class), anyString());
+		verify(checkCanConsume,times(0)).run(any(IpAddress.class), anyString());
+		verify(storeTimestamp,times(0)).run(any(IpAddress.class), anyString(), anyLong());
+		
+	}
+	
+	
+	@Test
+	public void shoudNotBeAbleToRequestIfClientIdInvalid() {
+				
+		streaming = new ProcessGeolocationStreaming(findGeolocation, checkCanConsume, storeTimestamp, properties);
+		TopologyTestDriver testDriver  = new TopologyTestDriver(streaming.getTopology(), properties.getProperties());
+		
+		TestInputTopic<String, String> inbound = testDriver.createInputTopic(properties.getSourceTopic(),new StringSerializer(),new StringSerializer());
+
+		inbound.pipeInput("",invalidInputJsonClientIdInvalid());
+		testDriver.close();
+		
+		verify(findGeolocation,times(0)).run(any(IpAddress.class), anyString());
+		verify(checkCanConsume,times(0)).run(any(IpAddress.class), anyString());
+		verify(storeTimestamp,times(0)).run(any(IpAddress.class), anyString(), anyLong());
+		
 	}
 	
 
@@ -99,9 +137,18 @@ public class ProcessGeolocationStreamingTest {
 		assertEquals(produced.getIp(), TestsConstants.VALID_IP);
 	}
 
-	private String inputJson() {
+	private String validInputJson() {
 		return String.format("{ \"clientId\": \"%s\", \"ip\": \"%s\" ,\"timestampUnixInMs\": %s}",TestsConstants.CLIENT_ID, TestsConstants.VALID_IP,TestsConstants.TIMESTAMP_UNIX_MILLI_NOW);
 	}
+	
+	private String invalidInputJsonClientIdInvalid() {
+		return String.format("{ \"clientId\": \"%s\", \"ip\": \"%s\" ,\"timestampUnixInMs\": %s}","", TestsConstants.VALID_IP,TestsConstants.TIMESTAMP_UNIX_MILLI_NOW);
+	}
+	
+	private String invalidInputJsonIpNull() {
+		return String.format("{ \"clientId\": \"%s\", \"ip\": \"%s\" ,\"timestampUnixInMs\": %s}",TestsConstants.CLIENT_ID,null,TestsConstants.TIMESTAMP_UNIX_MILLI_NOW);
+	}
+	
 	
 	
 

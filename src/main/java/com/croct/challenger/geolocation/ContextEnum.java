@@ -3,7 +3,7 @@ package com.croct.challenger.geolocation;
 import java.util.Properties;
 
 public enum ContextEnum {
-	IN_MEMORY, REAL;
+	IN_MEMORY, REAL,INVALID;
 	
 	public ContextFactory createContext(Properties config) {
 		switch (this) {
