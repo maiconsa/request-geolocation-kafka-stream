@@ -13,7 +13,7 @@ public class IpStackGeolocationService implements GeolocationApiService {
 	
 	private IpStackConverters converters = new IpStackConverters();
 	
-	public IpStackGeolocationService(IpStackGeolocationProperties properties,HttpClientRequest httpClient) {
+	public IpStackGeolocationService(final IpStackGeolocationProperties properties,final HttpClientRequest httpClient) {
 		this.properties = properties;
 		this.client= httpClient;
 	}

@@ -39,4 +39,14 @@ public class RequestedGeolocationEvent {
 	public String getKey() {
 		return clientId+"-"+ip;
 	}
+	
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("{ clientId: " + clientId + " , ");
+		builder.append(" ip: " + ip + " , ");
+		builder.append(" timestampUnixInMs: " + timestampUnixInMs + " }");
+		return builder.toString();
+	}
 }

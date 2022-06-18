@@ -8,6 +8,9 @@ public class RequestGeolocation {
 	private String ip;
 	private long timestampUnixInMs;
 
+	public RequestGeolocation() {
+	}
+	
 	public RequestGeolocation(Geolocation geolocation, String clientId, String ip ) {
 		this.geolocation = geolocation;
 		this.clientId = clientId;

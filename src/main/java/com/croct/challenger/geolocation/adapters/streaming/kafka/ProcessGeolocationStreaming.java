@@ -1,9 +1,6 @@
 package com.croct.challenger.geolocation.adapters.streaming.kafka;
 
 import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.kafka.common.serialization.Serdes;

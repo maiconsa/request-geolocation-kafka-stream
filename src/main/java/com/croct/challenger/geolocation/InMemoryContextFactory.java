@@ -1,7 +1,7 @@
 package com.croct.challenger.geolocation;
 
-import com.croct.challenger.geolocation.adapters.caches.InMemoryConsumedEventTimestampRepository;
-import com.croct.challenger.geolocation.adapters.caches.InMemoryRequestGeolocationRepository;
+import com.croct.challenger.geolocation.adapters.caches.inmemory.InMemoryConsumedEventTimestampRepository;
+import com.croct.challenger.geolocation.adapters.caches.inmemory.InMemoryRequestGeolocationRepository;
 import com.croct.challenger.geolocation.adapters.http.geolocation.fakeapi.FakeGeolocationApiService;
 import com.croct.challenger.geolocation.domain.geolocation.ports.GeolocationApiService;
 import com.croct.challenger.geolocation.domain.geolocation.ports.repository.ConsumedEventTimestampByUserRepository;

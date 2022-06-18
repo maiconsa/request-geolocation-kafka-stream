@@ -34,4 +34,9 @@ public class IpAddress {
 			}
 			
 	}
+	
+	@Override
+	public String toString() {
+		return ip;
+	}
 }

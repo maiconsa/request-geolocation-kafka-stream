@@ -1,5 +1,9 @@
 package com.croct.challenger.geolocation;
 
+import static com.croct.challenger.geolocation.commons.Env.check;
+import static com.croct.challenger.geolocation.commons.Env.extract;
+import static java.lang.System.getenv;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -18,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import com.croct.challenger.geolocation.adapters.streaming.kafka.ProcessGeolocationStreaming;
 import com.croct.challenger.geolocation.config.ApplicationProperties;
-import com.croct.challenger.geolocation.config.IpStackGeolocationProperties;
 import com.croct.challenger.geolocation.domain.geolocation.ports.CheckCanConsumeEventService;
 import com.croct.challenger.geolocation.domain.geolocation.ports.FindGeolocationByIpAddressService;
 import com.croct.challenger.geolocation.domain.geolocation.ports.StoreConsumedTimestampEventService;
@@ -30,27 +33,18 @@ import com.croct.challenger.geolocation.domain.geolocation.service.StoreTimestam
 public class Starter {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private final String REQUIRED_ENVS[] = new String[]{
-			"IP_STACK_ACCESS_KEY",
-			"KAFKA_BOOTSTRAP_SERVER",
-			"TIME_WINDOW_IN_MINUTES",
-			"SOURCE_TOPIC",
-			"TARGET_TOPIC","CONTEXT_EXECUTION"};
-	
 	public static void main(String[] args) throws Exception {
-		
 		new Starter().run();
-		
-
 	}
 	
 	public void run() throws Exception {		
-		checkEnviroment();
-		Properties config = extractPropertiesFromEnv();
+		check();
+		Properties config = extract();
+		logger.info(config.toString());
 		ApplicationProperties applicationProperties = ApplicationProperties.build(config);
-		createTopics(config, applicationProperties.getSourceTopic(),applicationProperties.getTargetTopic());
+		createTopics(applicationProperties.getProperties(), applicationProperties.getSourceTopic(),applicationProperties.getTargetTopic());
 			
-		ContextEnum context = ContextEnum.valueOf(System.getenv("CONTEXT_EXECUTION"));
+		ContextEnum context = ContextEnum.valueOf(getenv("CONTEXT_EXECUTION"));
 		ContextFactory contextFactory = context.createContext(config);		
 		ConsumedEventTimestampByUserRepository timestampRepository = contextFactory.getTimestampRepository();
 		
@@ -63,26 +57,6 @@ public class Starter {
 
 	}
 
-	private Properties extractPropertiesFromEnv() {
-		Properties config = new Properties();
-		config.put(IpStackGeolocationProperties.ACCESS_KEY,System.getenv("IP_STACK_ACCESS_KEY"));
-		config.put(ApplicationProperties.APP_ID, "geolocation-stream-app");
-		config.put(ApplicationProperties.BOOTSTRAP_SERVER, System.getenv("KAFKA_BOOTSTRAP_SERVER"));
-		config.put(ApplicationProperties.SOURCE_TOPIC, System.getenv("SOURCE_TOPIC"));
-		config.put(ApplicationProperties.TARGET_TOPIC, System.getenv("TARGET_TOPIC"));
-		config.put(ApplicationProperties.TIME_WINDOW_IN_MINUTES, System.getenv("TIME_WINDOW_IN_MINUTES"));
-		return config;
-	}
-
-	private void checkEnviroment() throws Exception {
-		for (String ENV : REQUIRED_ENVS) {
-			if(!System.getenv().containsKey(ENV)) {
-				throw new  Exception("Please set the "+ENV+" on environment");
-			}
-		}
-	}
-	
-	
 	 private void createTopics(final Properties allProps, String sourceTopic, String targetTOpic)
 	 
 	            throws InterruptedException, ExecutionException, TimeoutException {

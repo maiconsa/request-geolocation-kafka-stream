@@ -1,4 +1,4 @@
-package com.croct.challenger.geolocation.adapters.caches;
+package com.croct.challenger.geolocation.adapters.caches.inmemory;
 
 import static com.croct.challenger.geolocation.TestsConstants.CLIENT_ID;
 import static com.croct.challenger.geolocation.TestsConstants.MOCK_GEOLOCATION;
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.croct.challenger.geolocation.adapters.caches.inmemory.InMemoryRequestGeolocationRepository;
 import com.croct.challenger.geolocation.domain.geolocation.entity.RequestGeolocation;
 
 @ExtendWith(MockitoExtension.class)

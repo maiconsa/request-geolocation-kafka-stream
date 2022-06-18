@@ -1,4 +1,4 @@
-package com.croct.challenger.geolocation.adapters.caches;
+package com.croct.challenger.geolocation.adapters.caches.inmemory;
 
 import static com.croct.challenger.geolocation.TestsConstants.CLIENT_ID;
 import static com.croct.challenger.geolocation.TestsConstants.TIMESTAMP_UNIX_MILLI_NOW;

@@ -11,14 +11,31 @@ services:
        SOURCE_TOPIC: requested-geolocation
        TARGET_TOPIC: api-result-gelocation
        CONTEXT_EXECUTION: REAL #Valid values are REAL, IN_MEMORY
+       REDIS_HOST: redis  #Only required if CONTEXT_EXECUTION=REAL
+       REDIS_PORT: 6379   #Only required if CONTEXT_EXECUTION=REAL
+       REDIS_PASS : redipass  #Only required if CONTEXT_EXECUTION=REAL
+       
     volumes:
        - ./test-reports:/app/reports
     depends_on:   
+      redis:
+        condition: service_healthy
       kafka:
         condition: service_healthy
       schema-registry:
         condition: service_healthy  
-    
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass redipass
+    healthcheck:
+      test: nc -z localhost 6379 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
   zookeeper:
     image: confluentinc/cp-zookeeper:7.1.1
     hostname: zookeeper

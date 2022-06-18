@@ -11,6 +11,9 @@ public class Geolocation {
 	
 	private String country;
 	
+	public Geolocation() {
+	}
+	
 	public Geolocation(BigDecimal latitude, BigDecimal longitude , String city , String region , String country) {
 		this.location  = new Location(latitude , longitude);
 		this.city  = city;

@@ -131,6 +131,7 @@ public class ProcessGeolocationStreamingTest {
 		String expectedKey = String.format("%s-%s", TestsConstants.CLIENT_ID, TestsConstants.VALID_IP);
 		assertEquals(expectedKey, readRecord.getKey());
 		
+		@SuppressWarnings("resource")
 		FindedGeolocationEvent produced =  new JsonKafkaDeserializer<>(FindedGeolocationEvent.class).deserialize(null,readRecord.getValue().getBytes());
 		assertEquals(produced.getRegion(), TestsConstants.MOCK_GEOLOCATION.getRegion());
 		assertEquals(produced.getClientId(), TestsConstants.CLIENT_ID);

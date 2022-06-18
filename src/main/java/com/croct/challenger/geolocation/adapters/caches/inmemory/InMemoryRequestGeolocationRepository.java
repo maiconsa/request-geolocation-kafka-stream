@@ -1,9 +1,10 @@
-package com.croct.challenger.geolocation.adapters.caches;
+package com.croct.challenger.geolocation.adapters.caches.inmemory;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.croct.challenger.geolocation.adapters.caches.CacheKey;
 import com.croct.challenger.geolocation.domain.geolocation.entity.RequestGeolocation;
 import com.croct.challenger.geolocation.domain.geolocation.ports.repository.RequestGeolocationRepository;
 
