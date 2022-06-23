@@ -33,7 +33,8 @@ import com.challenger.geolocation.domain.geolocation.service.StoreTimestampEvent
 public class Starter {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {	
+		
 		new Starter().run();
 	}
 	

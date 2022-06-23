@@ -1,124 +1,193 @@
-version: "2.4"
+version: '2.4'
 services:
+ app-stream:
+   build: .
+   image: app-stream:latest
+   environment:
+     KAFKA_BOOTSTRAP_SERVER: kafka:9092
+     IP_STACK_ACCESS_KEY: YOUR_ACCESS_KEY
+     TIME_WINDOW_IN_MINUTES: 2
+     SOURCE_TOPIC: requested-geolocation
+     TARGET_TOPIC: api-result-gelocation
+     CONTEXT_EXECUTION: REAL
+     REDIS_HOST: redis
+     REDIS_PORT: 6379
+     REDIS_PASS: redipass
+     STASH_HOST: logstash:5000
+   volumes:
+   - ./test-reports:/app/reports:ro,z
+   depends_on:
+     redis:
+       condition: service_healthy
+     kafka:
+       condition: service_healthy
+     schema-registry:
+       condition: service_healthy
+     logstash:
+       condition: service_healthy
+ redis:
+   image: redis:6.2-alpine
+   restart: always
+   ports:
+   - 6379:6379
+   command: redis-server --save 20 1 --loglevel warning --requirepass redipass
+   healthcheck:
+     test: nc -z localhost 6379 || exit 1
+     interval: 30s
+     timeout: 10s
+     retries: 10
+     start_period: 30s
+ zookeeper:
+   image: confluentinc/cp-zookeeper:7.1.1
+   hostname: zookeeper
+   ports:
+   - 32181:32181
+   environment:
+     ZOOKEEPER_CLIENT_PORT: 32181
+     ZOOKEEPER_TICK_TIME: 2000
+   healthcheck:
+     test: nc -z localhost 32181 || exit 1
+     interval: 30s
+     timeout: 10s
+     retries: 10
+     start_period: 30s
+ kafka:
+   image: confluentinc/cp-enterprise-kafka:7.1.1
+   hostname: kafka
+   ports:
+   - 9092:9092
+   - 29092:29092
+   depends_on:
+     zookeeper:
+       condition: service_healthy
+   environment:
+     KAFKA_BROKER_ID: 1
+     KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
+     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
+     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+     KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+     CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka:29092
+     CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:32181
+     CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+     CONFLUENT_METRICS_ENABLE: 'true'
+     CONFLUENT_SUPPORT_CUSTOMER_ID: anonymous
+   healthcheck:
+     test: kafka-topics --list --bootstrap-server kafka:9092 || exit 1
+     interval: 30s
+     timeout: 10s
+     retries: 10
+     start_period: 30s
+ schema-registry:
+   image: confluentinc/cp-schema-registry:7.1.1
+   hostname: schema-registry
+   depends_on:
+     zookeeper:
+       condition: service_healthy
+     kafka:
+       condition: service_healthy
+   ports:
+   - 8081:8081
+   environment:
+     SCHEMA_REGISTRY_HOST_NAME: schema-registry
+     SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:32181
+     SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
+   healthcheck:
+     test: nc -z localhost 8081 || exit 1
+     interval: 30s
+     timeout: 10s
+     retries: 10
+     start_period: 30s
+ kafka-ui:
+   container_name: kafka-ui
+   image: provectuslabs/kafka-ui:latest
+   ports:
+   - 8888:8080
+   depends_on:
+     zookeeper:
+       condition: service_healthy
+     kafka:
+       condition: service_healthy
+     schema-registry:
+       condition: service_healthy
+   environment:
+     KAFKA_CLUSTERS_0_NAME: local
+     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+     KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:32181
+     KAFKA_CLUSTERS_0_JMXPORT: 9997
+     KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081   
+ setup_elasticstack:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
+    command:  sh ./start.sh
 
-  app-stream:
-    build: .
-    image: app-stream:latest
+    depends_on:
+       elasticsearch:
+         condition: service_healthy
     environment:
-       KAFKA_BOOTSTRAP_SERVER: kafka:9092
-       IP_STACK_ACCESS_KEY: YOUR_ACCESS_KEY #Only required if CONTEXT_EXECUTION=REAL
-       TIME_WINDOW_IN_MINUTES: 2
-       SOURCE_TOPIC: requested-geolocation
-       TARGET_TOPIC: api-result-gelocation
-       CONTEXT_EXECUTION: REAL #Valid values are REAL, IN_MEMORY
-       REDIS_HOST: redis  #Only required if CONTEXT_EXECUTION=REAL
-       REDIS_PORT: 6379   #Only required if CONTEXT_EXECUTION=REAL
-       REDIS_PASS : redipass  #Only required if CONTEXT_EXECUTION=REAL
-       
+      ELASTIC_PASSWORD: "elasticpass"
+      LOGSTASH_INTERNAL_USER: "logstash_internal"
+      LOGSTASH_INTERNAL_PASS : "logstash_internal_pass"
+      KIBANA_SYSTEM_PASS: "kibana_system_pass"
     volumes:
-       - ./test-reports:/app/reports
-    depends_on:   
-      redis:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-      schema-registry:
-        condition: service_healthy  
-  redis:
-    image: redis:6.2-alpine
-    restart: always
-    ports:
-      - '6379:6379'
-    command: redis-server --save 20 1 --loglevel warning --requirepass redipass
+      - ./elk-configs/setup/start.sh:/usr/share/elasticsearch/start.sh:ro,z
+      - ./elk-configs/setup/logstash_role.json:/usr/share/elasticsearch/logstash_role.json:ro,z
     healthcheck:
-      test: nc -z localhost 6379 || exit 1
+      test: nc -z localhost 9200 || exit 1
       interval: 30s
       timeout: 10s
       retries: 10
       start_period: 30s
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.1.1
-    hostname: zookeeper
-    ports:
-      - '32181:32181'
+ elasticsearch:
+   image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
+   environment:
+      ELASTIC_PASSWORD: "elasticpass"
+      discovery.type: single-node
+   volumes:
+      - ./elk-configs/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,z
+   ports:
+      - "9200:9200"
+      - "9300:9300"
+   healthcheck:
+    test: nc -z localhost 9200 || exit 1
+    interval: 30s
+    timeout: 10s
+    retries: 10
+    start_period: 30s
+ kibana:
+    image: docker.elastic.co/kibana/kibana:8.2.3
     environment:
-      ZOOKEEPER_CLIENT_PORT: 32181
-      ZOOKEEPER_TICK_TIME: 2000
-    healthcheck:
-      test: nc -z localhost 32181 || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 10
-      start_period: 30s
-      
-  kafka:
-    image: confluentinc/cp-enterprise-kafka:7.1.1
-    hostname: kafka
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+      ELASTICSEARCH_USERNAME: "kibana_system"
+      ELASTICSEARCH_PASSWORD: "kibana_system_pass"
+    volumes:
+      - ./elk-configs/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
     ports:
-      - '9092:9092'
-      - '29092:29092'
+      - "5601:5601"
     depends_on:
-      zookeeper:
-        condition: service_healthy
+      - setup_elasticstack
+      - elasticsearch
+ logstash:
+    image: docker.elastic.co/logstash/logstash:8.2.3
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
-      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka:29092
-      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:32181
-      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
-      CONFLUENT_METRICS_ENABLE: 'true'
-      CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+      ELASTICSEARCH_HOST: elasticsearch:9200
+      ELASTICSEARCH_USER : "logstash_internal"
+      ELASTICSEARCH_PASS : "logstash_internal_pass"
+    volumes:
+    - ./elk-configs/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+    - ./elk-configs/logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+    ports:
+    - 5044:5044 #Logstash Beats Input
+    - 5000:5000/tcp #Logstash TCP Input
+    - 5000:5000/udp 
+    - 9600:9600
     healthcheck:
-      test: kafka-topics --list --bootstrap-server kafka:9092 || exit 1
+      test: nc -z localhost 5000 || exit 1
       interval: 30s
       timeout: 10s
       retries: 10
       start_period: 30s
-
-  schema-registry:
-    image: confluentinc/cp-schema-registry:7.1.1
-    hostname: schema-registry
     depends_on:
-      zookeeper:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    ports:
-      - '8081:8081'
-    environment:
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:32181
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
-    healthcheck:
-      test: nc -z localhost 8081 || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 10
-      start_period: 30s
-      
-  kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - '8888:8080'
-    depends_on:
-      zookeeper:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-      schema-registry:
-        condition: service_healthy       
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:32181
-      KAFKA_CLUSTERS_0_JMXPORT: 9997
-      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
-      
-
+      - setup_elasticstack
+      - elasticsearch

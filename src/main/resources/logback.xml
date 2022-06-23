@@ -1,0 +1,26 @@
+<configuration>
+	<appender name="json"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+	</appender>
+
+
+	<appender name="STASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+		<destination>${STASH_HOST}</destination>
+		<encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+	</appender>
+
+
+	<appender name="STDOUT"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<root level="all">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="STASH" />
+	</root>
+</configuration>
