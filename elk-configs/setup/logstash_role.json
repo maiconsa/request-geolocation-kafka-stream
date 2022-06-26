@@ -8,7 +8,7 @@
       {
         "names": [
           "logs-generic-default",
-          "logstash-*",
+          "app-*",
           "ecs-logstash-*"
         ],
         "privileges": [
@@ -21,7 +21,7 @@
       },
       {
         "names": [
-          "logstash",
+          "app",
           "ecs-logstash"
         ],
         "privileges": [

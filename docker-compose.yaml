@@ -23,8 +23,6 @@ services:
        condition: service_healthy
      schema-registry:
        condition: service_healthy
-     logstash:
-       condition: service_healthy
  redis:
    image: redis:6.2-alpine
    restart: always
