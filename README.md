@@ -1,5 +1,6 @@
 # KafkaStreams: Solicitando Geolocation pelo IP com restrição de tempo entre as chamadas.
 
+![Arquitetura](https://github.com/maiconsa/request-geolocation-kafka-stream/blob/main/imgs/arquitetura.png)	
 
 ## Rodando aplicação
 

@@ -1,16 +1,21 @@
 package com.challenger.geolocation.commons;
 
+import static java.lang.System.getenv;
+
 import java.util.Map;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.challenger.geolocation.ContextEnum;
 import com.challenger.geolocation.config.ApplicationProperties;
 import com.challenger.geolocation.config.IpStackGeolocationProperties;
 import com.challenger.geolocation.config.RedisProperties;
 
-import static java.lang.System.getenv;
-
 public final  class Env {
+	private final static Logger logger = LoggerFactory.getLogger(Env.class);
+
 	private static final String REQUIRED_ENVS_REAL[] = new String[]{
 			"IP_STACK_ACCESS_KEY",
 			"KAFKA_BOOTSTRAP_SERVER",
@@ -19,14 +24,17 @@ public final  class Env {
 			"TARGET_TOPIC",
 			"REDIS_PORT",
 			"REDIS_HOST",
-			"REDIS_PASS"
+			"REDIS_PASS",
+			"STASH_HOST"
 	};
 	
 	private  static final String REQUIRED_ENVS_IN_MEMORY[] = new String[]{
 			"KAFKA_BOOTSTRAP_SERVER",
 			"TIME_WINDOW_IN_MINUTES",
 			"SOURCE_TOPIC",
-			"TARGET_TOPIC"};
+			"TARGET_TOPIC",
+			"STASH_HOST"
+			};
 	
 	private final static Map<ContextEnum, String[]> REQUIRED_ENV_BY_CONTEXT = Map.of(
 			ContextEnum.REAL,REQUIRED_ENVS_REAL,
@@ -43,6 +51,7 @@ public final  class Env {
 
 	private static void check(String keyEnv) throws Exception {
 		if(!System.getenv().containsKey(keyEnv)) {
+			logger.error("Please set the "+keyEnv+" on environment");
 			throw new  Exception("Please set the "+keyEnv+" on environment");
 		}
 	}
